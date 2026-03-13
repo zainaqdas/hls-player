@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom HLS Player</title>
+    <!-- Load the HLS.js library to play .m3u8 files -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        video {
+            width: 100%;
+            margin-top: 20px;
+            background-color: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            aspect-ratio: 16/9;
+        }
+        #status-text {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #ff9800;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Custom Video Player</h2>
+        <p><i>Cloudflare Proxy Active. No extensions needed. Auto-quality will not drop below 480p.</i></p>
+        
+        <input type="text" id="videoUrl" placeholder="Paste your .m3u8 link here...">
+        <button onclick="playVideo()">Play Video</button>
+
+        <div id="status-text"></div>
+        <video id="videoPlayer" controls></video>
+    </div>
+
+    <script>
+        // Your Cloudflare Worker Proxy URL
+        const PROXY_URL = "https://hlsplayer.dgfrii1800.workers.dev/?url=";
+
+        function playVideo() {
+            var url = document.getElementById('videoUrl').value;
+            var video = document.getElementById('videoPlayer');
+            var status = document.getElementById('status-text');
+
+            if (!url) {
+                alert("Please enter a video URL");
+                return;
+            }
+
+            // Destroy previous player instance if playing a new video
+            if (window.hls) {
+                window.hls.destroy();
+            }
+
+            status.innerText = "Loading video securely via proxy...";
+
+            // Check if browser supports HLS.js (Chrome, Firefox, Edge, Hyperbeam)
+            if (Hls.isSupported()) {
+                
+                // This function forces all requests (chunks, audio, playlists) through your proxy
+                const proxyLoader = function (config) {
+                    let loader = new Hls.DefaultConfig.loader(config);
+                    this.abort = () => loader.abort();
+                    this.destroy = () => loader.destroy();
+                    this.load = (context, config, callbacks) => {
+                        context.url = PROXY_URL + encodeURIComponent(context.url);
+                        loader.load(context, config, callbacks);
+                    };
+                };
+
+                // Initialize HLS with our custom proxy loaders
+                window.hls = new Hls({
+                    pLoader: proxyLoader, // Playlists
+                    fLoader: proxyLoader, // Fragments/Video Chunks
+                    aLoader: proxyLoader  // Audio Tracks
+                });
+
+                window.hls.loadSource(url);
+                window.hls.attachMedia(video);
+
+                window.hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                    // Find the lowest quality level that is at least 480p
+                    let minLevel = window.hls.levels.find(level => level.height >= 480);
+                    
+                    if (minLevel) {
+                        // Tell HLS.js that the auto-quality algorithm cannot drop below this bitrate
+                        window.hls.config.minAutoBitrate = minLevel.bitrate;
+                        console.log("Quality floored to minimum:", minLevel.height + "p");
+                    }
+
+                    status.innerText = "Playing. Quality will adapt (Minimum 480p).";
+                    video.play();
+                });
+
+                // Error handling to prevent the player from getting stuck
+                window.hls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                console.error("Network error, trying to recover...");
+                                window.hls.startLoad();
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                console.error("Media error, trying to recover...");
+                                window.hls.recoverMediaError();
+                                break;
+                            default:
+                                status.innerText = "Fatal Error. Cannot play video.";
+                                window.hls.destroy();
+                                break;
+                        }
+                    }
+                });
+
+            } 
+            // Fallback for Safari (Mac/iOS natively support HLS without Hls.js)
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = PROXY_URL + encodeURIComponent(url);
+                video.addEventListener('loadedmetadata', function() {
+                    status.innerText = "Playing in Safari Native Mode.";
+                    video.play();
+                });
+            } else {
+                alert("Your browser does not support HLS playback.");
+            }
+        }
+    </script>
+
+</body>
+</html>
