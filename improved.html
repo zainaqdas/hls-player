@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Custom HLS Player - Enhanced</title>
+    <!-- Load the HLS.js library to play .m3u8 files -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+        }
+        input {
+            width: 80%;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #333;
+            color: white;
+            border: 1px solid #555;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            margin-top: 20px;
+        }
+        video {
+            width: 100%;
+            background-color: #000;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+        }
+        .status-bar {
+            margin-top: 10px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9em;
+            color: #aaa;
+        }
+        .badge {
+            background-color: #222;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>Custom Video Player</h2>
+        <p style="font-size: 0.9em; color: #ccc;"><i>Note: Keep your Referer Control extension ON and set to Patreon for Mux links to work.</i></p>
+        
+        <input type="text" id="videoUrl" placeholder="Paste your .m3u8 link here...">
+        <br>
+        <button onclick="playVideo()">Play Video</button>
+
+        <div class="video-wrapper">
+            <video id="videoPlayer" controls></video>
+            
+            <!-- Added a status bar to show current quality -->
+            <div class="status-bar">
+                <span id="statusMessage">Status: Waiting for video...</span>
+                <span id="qualityIndicator" class="badge">Quality: -</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. Declare HLS globally so it can be destroyed between loads (fixes memory leak)
+        let hls; 
+
+        function playVideo() {
+            const url = document.getElementById('videoUrl').value.trim();
+            const video = document.getElementById('videoPlayer');
+            const statusMsg = document.getElementById('statusMessage');
+            const qualityIndicator = document.getElementById('qualityIndicator');
+
+            if (!url) {
+                alert("Please enter a valid video URL");
+                return;
+            }
+
+            // 2. Destroy existing HLS instance to prevent overlapping audio tracks
+            if (hls) {
+                hls.destroy();
+                qualityIndicator.innerText = "Quality: -";
+            }
+
+            statusMsg.innerText = "Status: Loading...";
+
+            // 3. Main Logic for Browsers that need HLS.js
+            if (Hls.isSupported()) {
+                // Initialize HLS. Automatic Bitrate (ABR) is natively enabled by default.
+                hls = new Hls();
+                hls.loadSource(url);
+                hls.attachMedia(video);
+
+                // 4. Implement 480p Minimum Limit once the stream details are parsed
+                hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+                    statusMsg.innerText = "Status: Playing";
+                    
+                    // Filter the available qualities to find those that are 480p or higher
+                    const validLevels = data.levels.filter(level => level.height >= 480);
+                    
+                    if (validLevels.length > 0) {
+                        // Find the lowest bitrate among the 480p+ levels
+                        const minBitrate = Math.min(...validLevels.map(l => l.bitrate));
+                        
+                        // Enforce the floor limit. 
+                        // The engine will auto-adjust to internet speed, but never drop below this bitrate.
+                        hls.config.minAutoBitrate = minBitrate;
+                        console.log(`Quality floored at >= 480p. Minimum allowed bitrate: ${minBitrate}`);
+                    } else {
+                        console.log("No 480p or higher levels found in this stream manifest.");
+                    }
+
+                    video.play();
+                });
+
+                // Update the UI indicator whenever the internet speed forces a quality change
+                hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
+                    const level = hls.levels[data.level];
+                    if (level) {
+                        qualityIndicator.innerText = `Quality: Auto (${level.height}p)`;
+                    }
+                });
+
+                // Catch and handle errors gracefully
+                hls.on(Hls.Events.ERROR, function(event, data) {
+                    if (data.fatal) {
+                        switch (data.type) {
+                            case Hls.ErrorTypes.NETWORK_ERROR:
+                                statusMsg.innerText = "Status: Network Error (Is your Referer extension on?)";
+                                hls.startLoad(); // attempt to recover
+                                break;
+                            case Hls.ErrorTypes.MEDIA_ERROR:
+                                statusMsg.innerText = "Status: Media Error";
+                                hls.recoverMediaError();
+                                break;
+                            default:
+                                statusMsg.innerText = "Status: Fatal Error";
+                                hls.destroy();
+                                break;
+                        }
+                    }
+                });
+            } 
+            // 5. Fallback for iOS/Safari Native Players
+            else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+                video.src = url;
+                statusMsg.innerText = "Status: Playing (Native iOS/Safari)";
+                qualityIndicator.innerText = "Quality: Auto";
+                
+                video.addEventListener('loadedmetadata', function() {
+                    video.play();
+                });
+            } else {
+                alert("Your browser does not support HLS playback.");
+            }
+        }
+    </script>
+
+</body>
+</html>
