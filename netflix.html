@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamX Player</title>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
+
+<style>
+* {
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: linear-gradient(to bottom, #0f0f0f, #000);
+    color:white;
+}
+
+/* HEADER */
+.header {
+    padding:20px;
+    font-size:24px;
+    font-weight:bold;
+    color:#e50914;
+}
+
+/* HERO SECTION */
+.hero {
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:30px;
+}
+
+/* SEARCH BAR */
+.search-box {
+    width:90%;
+    max-width:700px;
+    display:flex;
+    gap:10px;
+}
+
+.search-box input {
+    flex:1;
+    padding:14px;
+    border-radius:8px;
+    border:none;
+    background:#1c1c1c;
+    color:white;
+    font-size:16px;
+}
+
+.search-box button {
+    background:#e50914;
+    border:none;
+    padding:14px 20px;
+    border-radius:8px;
+    color:white;
+    cursor:pointer;
+    font-weight:bold;
+}
+
+/* PLAYER */
+.player-container {
+    width:90%;
+    max-width:900px;
+    margin-top:30px;
+    position:relative;
+}
+
+video {
+    width:100%;
+    border-radius:10px;
+    background:black;
+}
+
+/* CONTROLS PANEL */
+.controls {
+    margin-top:15px;
+    display:flex;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:10px;
+    background: rgba(255,255,255,0.05);
+    padding:15px;
+    border-radius:10px;
+    backdrop-filter: blur(10px);
+}
+
+select, label {
+    background:#1c1c1c;
+    border:none;
+    padding:10px;
+    border-radius:6px;
+    color:white;
+}
+
+/* STATUS */
+.status {
+    margin-top:10px;
+    font-size:14px;
+    color:#aaa;
+}
+</style>
+</head>
+
+<body>
+
+<div class="header">StreamX</div>
+
+<div class="hero">
+
+    <div class="search-box">
+        <input id="url" placeholder="Paste movie / stream link (.m3u8 or mp4)">
+        <button onclick="startPlayback()">Play</button>
+    </div>
+
+    <div class="player-container">
+        <video id="video" controls></video>
+
+        <div class="controls">
+            <div>
+                <label>
+                    <input type="checkbox" id="useProxy"> Proxy
+                </label>
+            </div>
+
+            <select id="quality" onchange="setQuality()">
+                <option value="-1">Auto Quality</option>
+            </select>
+
+            <select onchange="setSpeed(this.value)">
+                <option value="1">Speed 1x</option>
+                <option value="1.25">1.25x</option>
+                <option value="1.5">1.5x</option>
+                <option value="2">2x</option>
+            </select>
+        </div>
+
+        <div class="status" id="status">Ready to stream</div>
+    </div>
+
+</div>
+
+<script>
+let hls;
+const PROXY = "https://hlsplayer.dgfrii1800.workers.dev/?url=";
+
+function startPlayback() {
+    const url = document.getElementById("url").value.trim();
+    const video = document.getElementById("video");
+    const status = document.getElementById("status");
+    const useProxy = document.getElementById("useProxy").checked;
+    const qualitySelect = document.getElementById("quality");
+
+    if (!url) return alert("Enter URL");
+
+    if (hls) {
+        hls.destroy();
+        hls = null;
+    }
+
+    qualitySelect.innerHTML = `<option value="-1">Auto Quality</option>`;
+    status.innerText = "Loading...";
+
+    if (url.includes(".m3u8")) {
+
+        if (Hls.isSupported()) {
+
+            hls = new Hls({
+                maxBufferLength: 60,
+                maxMaxBufferLength: 120,
+
+                xhrSetup: function(xhr, originalUrl) {
+                    if (useProxy) {
+                        xhr.open('GET', PROXY + encodeURIComponent(originalUrl), true);
+                    }
+                }
+            });
+
+            hls.loadSource(url);
+            hls.attachMedia(video);
+
+            hls.on(Hls.Events.MANIFEST_PARSED, function(event, data) {
+
+                data.levels.forEach((level, index) => {
+                    let opt = document.createElement("option");
+                    opt.value = index;
+                    opt.text = level.height + "p";
+                    qualitySelect.appendChild(opt);
+                });
+
+                const valid = data.levels.filter(l => l.height >= 480);
+                if (valid.length) {
+                    const minBitrate = Math.min(...valid.map(l => l.bitrate));
+                    hls.config.minAutoBitrate = minBitrate;
+                }
+
+                status.innerText = "Playing (HLS)";
+                video.play();
+            });
+
+            hls.on(Hls.Events.LEVEL_SWITCHED, function(event, data) {
+                const lvl = hls.levels[data.level];
+                if (lvl) {
+                    status.innerText = `Playing ${lvl.height}p`;
+                }
+            });
+
+            hls.on(Hls.Events.ERROR, function() {
+                status.innerText = "Playback Error";
+            });
+
+        } else {
+            video.src = useProxy ? PROXY + encodeURIComponent(url) : url;
+            video.play();
+        }
+
+    } else {
+        video.src = url;
+        video.play();
+        status.innerText = "Playing Direct Video";
+    }
+}
+
+function setQuality() {
+    if (hls) {
+        hls.currentLevel = parseInt(document.getElementById("quality").value);
+    }
+}
+
+function setSpeed(speed) {
+    document.getElementById("video").playbackRate = speed;
+}
+</script>
+
+</body>
+</html>
