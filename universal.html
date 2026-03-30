@@ -19,7 +19,6 @@
   --text2: #aaa;
   --muted: #555;
   --radius: 10px;
-  --sidebar-w: 290px;
 }
 [data-theme="amoled"]{--bg:#000;--surface:#0a0a0a;--surface2:#111;--surface3:#181818;}
 [data-theme="light"]{--bg:#f0f0f0;--surface:#fff;--surface2:#e8e8e8;--surface3:#ddd;--border:rgba(0,0,0,0.09);--text:#111;--text2:#444;--muted:#999;}
@@ -34,43 +33,9 @@ body::before{content:'';position:fixed;inset:0;background-image:url("data:image/
 [data-theme="light"] .header{background:rgba(240,240,240,0.93);}
 [data-theme="solar"] .header{background:rgba(0,43,54,0.93);}
 .logo{font-family:'Bebas Neue',sans-serif;font-size:26px;letter-spacing:3px;color:var(--accent);text-shadow:0 0 24px var(--accent-glow);cursor:pointer;}
-.header-right{display:flex;align-items:center;gap:8px;}
-.hdr-btn{background:var(--surface2);border:1px solid var(--border);color:var(--text2);padding:6px 12px;border-radius:7px;font-size:12px;font-family:'DM Sans',sans-serif;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all .2s;white-space:nowrap;}
-.hdr-btn:hover{border-color:var(--accent);color:var(--text);}
-.hdr-btn svg{width:13px;height:13px;}
 
 /* LAYOUT */
 .app-body{display:flex;min-height:calc(100vh - 54px);position:relative;z-index:1;}
-
-/* SIDEBAR */
-.sidebar{width:var(--sidebar-w);border-right:1px solid var(--border);background:var(--surface);display:flex;flex-direction:column;flex-shrink:0;overflow:hidden;transition:width .3s,opacity .3s;}
-.sidebar.collapsed{width:0;opacity:0;}
-.sb-head{padding:12px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
-.sb-head h3{font-size:13px;font-weight:600;}
-.sb-actions{display:flex;gap:5px;}
-.icon-btn{background:none;border:1px solid var(--border);color:var(--text2);width:27px;height:27px;border-radius:6px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
-.icon-btn:hover{border-color:var(--accent);color:var(--accent);}
-.icon-btn svg{width:12px;height:12px;}
-.sb-search{padding:9px 12px;border-bottom:1px solid var(--border);flex-shrink:0;}
-.sb-search input{width:100%;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:12px;outline:none;}
-.sb-search input:focus{border-color:rgba(229,9,20,.4);}
-.ch-list{flex:1;overflow-y:auto;padding:5px;}
-.ch-list::-webkit-scrollbar{width:3px;}
-.ch-list::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px;}
-.ch-group-lbl{font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);padding:10px 8px 3px;}
-.ch-item{display:flex;align-items:center;gap:9px;padding:8px 9px;border-radius:7px;cursor:pointer;width:100%;text-align:left;background:none;border:none;color:var(--text);transition:background .15s;position:relative;}
-.ch-item:hover{background:var(--surface2);}
-.ch-item.active{background:rgba(229,9,20,.12);}
-.ch-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--accent);border-radius:2px;}
-.ch-logo{width:30px;height:30px;border-radius:6px;background:var(--surface3);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--accent);overflow:hidden;}
-.ch-logo img{width:100%;height:100%;object-fit:contain;}
-.ch-info{flex:1;min-width:0;}
-.ch-name{font-size:12px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.ch-grp{font-size:10px;color:var(--muted);}
-.ch-fav-btn{background:none;border:none;cursor:pointer;color:var(--muted);padding:2px;flex-shrink:0;transition:color .15s;display:flex;}
-.ch-fav-btn.on{color:#f59e0b;}
-.ch-fav-btn svg{width:12px;height:12px;}
-.sb-empty{text-align:center;padding:36px 16px;color:var(--muted);font-size:12px;line-height:1.7;}
 
 /* MAIN */
 .main{flex:1;min-width:0;padding:20px 22px 56px;}
@@ -241,19 +206,25 @@ video::cue{background:rgba(0,0,0,.78);color:#fff;font-size:16px;}
 @keyframes tIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
 @keyframes tOut{from{opacity:1}to{opacity:0;transform:translateY(7px)}}
 
+/* PROXY ROW */
+.proxy-row{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;background:var(--surface);border:1px solid var(--border);border-radius:9px;padding:10px 15px;flex-wrap:wrap;gap:6px;}
+.proxy-toggle-wrap{display:flex;align-items:center;gap:9px;}
+.proxy-lbl{font-size:13px;font-weight:500;color:var(--text);display:flex;align-items:center;gap:5px;}
+.proxy-lbl svg{color:var(--accent);}
+.proxy-status{font-size:11px;font-weight:700;letter-spacing:1px;padding:2px 8px;border-radius:4px;background:rgba(34,197,94,.12);color:#22c55e;border:1px solid rgba(34,197,94,.25);transition:all .2s;}
+.proxy-status.off{background:rgba(255,255,255,.05);color:var(--muted);border-color:var(--border);}
+.proxy-hint{font-size:11px;color:var(--muted);}
+
 /* RESPONSIVE */
 @media(max-width:768px){
-  .sidebar{position:fixed;left:0;top:54px;bottom:0;z-index:150;}
-  .sidebar.collapsed{width:0;opacity:0;}
   .pg{grid-template-columns:1fr;}
   .vol-wrap{display:none;}
   .main{padding:14px 12px 48px;}
   .stats-grid{grid-template-columns:1fr 1fr;}
+  .proxy-row{flex-direction:column;align-items:flex-start;}
 }
 @media(max-width:480px){
   .stats-grid{grid-template-columns:1fr;}
-  .extra-row{flex-direction:column;}
-  .header-right .hdr-btn span{display:none;}
 }
 ::-webkit-scrollbar{width:4px;}
 ::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:4px;}
@@ -264,53 +235,13 @@ video::cue{background:rgba(0,0,0,.78);color:#fff;font-size:16px;}
 <!-- HEADER -->
 <div class="header">
   <div class="logo">StreamX</div>
-  <div class="header-right">
-    <button class="hdr-btn" onclick="triggerM3U()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16M4 10h16M4 14h8"/><rect x="14" y="12" width="8" height="8" rx="1"/></svg>
-      <span>Playlist</span>
-    </button>
-    <button class="hdr-btn" onclick="exportData()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      <span>Export</span>
-    </button>
-    <button class="hdr-btn" onclick="triggerImport()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-      <span>Import</span>
-    </button>
-    <button class="hdr-btn" onclick="toggleSidebar()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
-      <span>Channels</span>
-    </button>
-  </div>
+  <div class="header-meta" style="font-size:11px;color:var(--muted);letter-spacing:1px;text-transform:uppercase;">Universal Player</div>
 </div>
 
 <!-- hidden inputs -->
-<input type="file" id="m3uFile" accept=".m3u,.m3u8" style="display:none" onchange="handleM3U(event)">
-<input type="file" id="importFile" accept=".json" style="display:none" onchange="handleImport(event)">
 <input type="file" id="subFile" accept=".vtt,.srt" style="display:none" onchange="handleSubtitle(event)">
 
 <div class="app-body">
-
-<!-- SIDEBAR -->
-<div class="sidebar collapsed" id="sidebar">
-  <div class="sb-head">
-    <h3>Channels <span id="chCount" style="color:var(--muted);font-weight:400;font-size:11px"></span></h3>
-    <div class="sb-actions">
-      <button class="icon-btn" onclick="triggerM3U()" title="Load M3U">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12l7 7 7-7"/></svg>
-      </button>
-      <button class="icon-btn" onclick="clearPlaylist()" title="Clear playlist">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/></svg>
-      </button>
-    </div>
-  </div>
-  <div class="sb-search">
-    <input id="chSearch" placeholder="Search channels…" oninput="filterCh(this.value)">
-  </div>
-  <div class="ch-list" id="chList">
-    <div class="sb-empty">No playlist loaded.<br>Click <strong>Playlist</strong> to load an M3U file or paste a channel URL above.</div>
-  </div>
-</div>
 
 <!-- MAIN -->
 <div class="main">
@@ -322,9 +253,16 @@ video::cue{background:rgba(0,0,0,.78);color:#fff;font-size:16px;}
       Play
     </button>
   </div>
-  <div class="extra-row">
-    <input id="backupUrl" placeholder="Backup stream URL (fallback if primary fails)">
-    <input id="proxyUrl" placeholder="Proxy URL (optional, e.g. https://worker.dev/?url=)">
+  <div class="proxy-row">
+    <div class="proxy-toggle-wrap">
+      <div class="tog on" id="proxyTog" onclick="toggleProxy()"></div>
+      <span class="proxy-lbl">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><circle cx="12" cy="12" r="10"/><path d="M2 12h20M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        Cloudflare Proxy
+      </span>
+      <span class="proxy-status" id="proxyStatus">ON</span>
+    </div>
+    <span class="proxy-hint">Routes stream through proxy to bypass CORS restrictions</span>
   </div>
 
   <!-- PLAYER -->
@@ -532,8 +470,9 @@ video::cue{background:rgba(0,0,0,.78);color:#fff;font-size:16px;}
 let hls=null, retryCount=0, maxRetries=3, retryTimer=null;
 let isLoading=false, autoRetry=true, idleHide=false, idleTimer=null;
 let currentUrl='', currentName='', isTheater=false, isLoop=false, isMini=false;
-let playlist=[], filtered=[];
+let useProxy=true;
 let statsIv=null;
+const PROXY_URL='https://hlsplayer.dgfrii1800.workers.dev/?url=';
 
 // DOM
 const video  = document.getElementById('video');
@@ -660,10 +599,10 @@ function _load(url){
   if(hls){hls.destroy();hls=null;}
   qSel.innerHTML='<option value="-1">Auto</option>';
   stopStats();
-  const proxy=document.getElementById('proxyUrl').value.trim();
-  (url.includes('.m3u8')||url.includes('m3u8'))?_loadHLS(url,proxy):_loadDirect(url);
+  (url.includes('.m3u8')||url.includes('m3u8'))?_loadHLS(url):_loadDirect(url);
 }
-function _loadHLS(url,proxy){
+function _loadHLS(url){
+  const proxy=useProxy?PROXY_URL:'';
   if(!Hls.isSupported()){
     if(video.canPlayType('application/vnd.apple.mpegurl')){
       video.src=proxy?proxy+encodeURIComponent(url):url;
@@ -695,11 +634,7 @@ function _loadHLS(url,proxy){
 function _loadDirect(url){
   video.src=url;
   video.play().then(()=>{saveHist(currentUrl,currentName);_onStart('Direct');})
-  .catch(()=>{
-    const bk=document.getElementById('backupUrl').value.trim();
-    if(bk){toast('Primary failed — trying backup…','info');currentUrl=bk;urlIn.value=bk;_load(bk);}
-    else{setSt('Playback failed','error');toast('Could not play this URL','error');_resetLoad();}
-  });
+  .catch(()=>{setSt('Playback failed','error');toast('Could not play this URL','error');_resetLoad();});
 }
 function _onStart(type){
   spinOv.classList.remove('on');
@@ -711,14 +646,12 @@ function _onStart(type){
 }
 function _handleErr(){
   spinOv.classList.remove('on');_resetLoad();
-  const bk=document.getElementById('backupUrl').value.trim();
-  if(bk&&retryCount>=maxRetries){toast('Switching to backup…','info');currentUrl=bk;urlIn.value=bk;retryCount=0;_load(bk);return;}
   if(autoRetry&&retryCount<maxRetries){
     retryCount++;const d=retryCount*2000;
     setSt(`Error — retrying in ${d/1000}s (${retryCount}/${maxRetries})…`,'error');
     toast(`Retry ${retryCount}/${maxRetries}`,'error');
     retryTimer=setTimeout(()=>_load(currentUrl),d);
-  }else{setSt('Playback failed. Check URL or proxy.','error');toast('Stream failed','error');}
+  }else{setSt('Playback failed. Check URL or enable proxy.','error');toast('Stream failed','error');}
 }
 function _resetLoad(){isLoading=false;playBtn.disabled=false;}
 
@@ -800,6 +733,14 @@ function toggleMini(){
 function syncMini(){const mv=document.getElementById('miniVid');if(Math.abs(mv.currentTime-video.currentTime)>1)mv.currentTime=video.currentTime;}
 function closeMini(){isMini=false;const mv=document.getElementById('miniVid');mv.pause();mv.src='';document.getElementById('miniPlayer').classList.remove('show');video.removeEventListener('timeupdate',syncMini);}
 function toggleRetry(){autoRetry=!autoRetry;document.getElementById('retryTog').classList.toggle('on',autoRetry);toast(autoRetry?'Auto-retry on':'Auto-retry off');}
+function toggleProxy(){
+  useProxy=!useProxy;
+  document.getElementById('proxyTog').classList.toggle('on',useProxy);
+  const st=document.getElementById('proxyStatus');
+  st.textContent=useProxy?'ON':'OFF';
+  st.classList.toggle('off',!useProxy);
+  toast(useProxy?'Proxy enabled':'Proxy disabled');
+}
 function toggleIdle(){idleHide=!idleHide;document.getElementById('idleTog').classList.toggle('on',idleHide);if(!idleHide){pw.classList.remove('idle');clearTimeout(idleTimer);}toast(idleHide?'Auto-hide enabled':'Auto-hide disabled');}
 
 // idle
@@ -871,9 +812,8 @@ document.addEventListener('keydown',e=>{
 urlIn.addEventListener('keydown',e=>{if(e.key==='Enter')startPlayback();});
 
 // ══════════════════════════════════════
-// SIDEBAR & TABS
+// TABS
 // ══════════════════════════════════════
-function toggleSidebar(){document.getElementById('sidebar').classList.toggle('collapsed');}
 function switchTab(id,btn){
   document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.tab').forEach(b=>b.classList.remove('active'));
@@ -904,66 +844,6 @@ function handleSubtitle(e){
 }
 
 // ══════════════════════════════════════
-// M3U PLAYLIST
-// ══════════════════════════════════════
-function triggerM3U(){document.getElementById('m3uFile').click();}
-function handleM3U(e){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>parseM3U(ev.target.result);
-  reader.readAsText(file);e.target.value='';
-}
-function parseM3U(text){
-  const lines=text.split('\n').map(l=>l.trim()).filter(Boolean);
-  playlist=[];let cur={};
-  for(const line of lines){
-    if(line.startsWith('#EXTINF')){
-      cur={
-        name:(line.match(/,(.+)$/)||[,'Channel'])[1].trim(),
-        group:((line.match(/group-title="([^"]+)"/))||[,'General'])[1],
-        logo:((line.match(/tvg-logo="([^"]+)"/))||['',''])[1]
-      };
-    }else if(!line.startsWith('#')&&(line.startsWith('http')||line.startsWith('rtmp'))){
-      cur.url=line;playlist.push({...cur});cur={};
-    }
-  }
-  filtered=[...playlist];renderPlaylist(filtered);
-  document.getElementById('sidebar').classList.remove('collapsed');
-  toast(`Loaded ${playlist.length} channels`,'success');
-}
-function renderPlaylist(list){
-  const el=document.getElementById('chList');
-  document.getElementById('chCount').textContent=`(${list.length})`;
-  if(!list.length){el.innerHTML='<div class="sb-empty">No channels found.</div>';return;}
-  const groups={};
-  list.forEach(ch=>{if(!groups[ch.group])groups[ch.group]=[];groups[ch.group].push(ch);});
-  const favUrls=getFavs().map(f=>f.url);
-  el.innerHTML=Object.entries(groups).map(([g,chs])=>`
-    <div class="ch-group-lbl">${g}</div>
-    ${chs.map(ch=>{
-      const ini=ch.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
-      const faved=favUrls.includes(ch.url);
-      const eu=encodeURIComponent(ch.url),en=encodeURIComponent(ch.name);
-      return`<button class="ch-item" onclick="playCh('${eu}','${en}',this)">
-        <div class="ch-logo">${ch.logo?`<img src="${ch.logo}" onerror="this.parentNode.textContent='${ini}'">`:ini}</div>
-        <div class="ch-info"><div class="ch-name">${ch.name}</div></div>
-        <button class="ch-fav-btn ${faved?'on':''}" onclick="event.stopPropagation();chFav('${eu}','${en}',this)" title="Favorite">
-          <svg viewBox="0 0 24 24" fill="${faved?'#f59e0b':'none'}" stroke="${faved?'#f59e0b':'currentColor'}" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-        </button>
-      </button>`;
-    }).join('')}`).join('');
-}
-function filterCh(q){filtered=q?playlist.filter(c=>c.name.toLowerCase().includes(q.toLowerCase())||c.group.toLowerCase().includes(q.toLowerCase())):[...playlist];renderPlaylist(filtered);}
-function playCh(eu,en,btn){document.querySelectorAll('.ch-item').forEach(b=>b.classList.remove('active'));btn.classList.add('active');urlIn.value=decodeURIComponent(eu);currentName=decodeURIComponent(en);startPlayback();}
-function chFav(eu,en,btn){
-  const url=decodeURIComponent(eu),name=decodeURIComponent(en);toggleFav(url,name);
-  const faved=isFav(url);btn.classList.toggle('on',faved);
-  btn.querySelector('svg').setAttribute('fill',faved?'#f59e0b':'none');
-  btn.querySelector('svg').setAttribute('stroke',faved?'#f59e0b':'currentColor');
-}
-function clearPlaylist(){playlist=[];filtered=[];document.getElementById('chList').innerHTML='<div class="sb-empty">No playlist loaded.</div>';document.getElementById('chCount').textContent='';toast('Playlist cleared');}
-
-// ══════════════════════════════════════
 // THEME & ACCENT
 // ══════════════════════════════════════
 function setTheme(t,btn){
@@ -979,31 +859,6 @@ function setAccent(color,sw){
   if(sw)sw.classList.add('active');
   document.getElementById('accPick').value=color;
   localStorage.setItem('sx_a',color);
-}
-
-// ══════════════════════════════════════
-// EXPORT / IMPORT
-// ══════════════════════════════════════
-function exportData(){
-  const data={history:JSON.parse(localStorage.getItem('sx_h')||'[]'),favorites:JSON.parse(localStorage.getItem('sx_f')||'[]'),theme:localStorage.getItem('sx_t')||'dark',accent:localStorage.getItem('sx_a')||'#e50914'};
-  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:'application/json'}));a.download=`streamx-backup-${Date.now()}.json`;a.click();
-  toast('Data exported!','success');
-}
-function triggerImport(){document.getElementById('importFile').click();}
-function handleImport(e){
-  const file=e.target.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    try{
-      const d=JSON.parse(ev.target.result);
-      if(d.history)localStorage.setItem('sx_h',JSON.stringify(d.history));
-      if(d.favorites)localStorage.setItem('sx_f',JSON.stringify(d.favorites));
-      if(d.theme)localStorage.setItem('sx_t',d.theme);
-      if(d.accent)localStorage.setItem('sx_a',d.accent);
-      applySettings();renderHist();renderFavs();toast('Data imported!','success');
-    }catch{toast('Invalid import file','error');}
-  };
-  reader.readAsText(file);e.target.value='';
 }
 
 // ══════════════════════════════════════
