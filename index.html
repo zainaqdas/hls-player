@@ -999,11 +999,31 @@ function toggleProxy(){
   toast(useProxy?'Proxy enabled':'Proxy disabled');
 }
 
+function isIOS(){
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+}
+
 function toggleFS(){
+  // iOS Safari: requestFullscreen on a div is NOT supported.
+  // The only working API is video.webkitEnterFullscreen() directly on the video element.
+  if(isIOS()){
+    if(video.webkitDisplayingFullscreen){
+      video.webkitExitFullscreen();
+    } else {
+      video.webkitEnterFullscreen();
+    }
+    return;
+  }
+  // All other browsers: fullscreen the player wrapper div
   const el=pw;
-  const isFs=document.fullscreenElement||document.webkitFullscreenElement;
-  if(!isFs)(el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen).call(el);
-  else(document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen).call(document);
+  const isFs=document.fullscreenElement||document.webkitFullscreenElement||document.mozFullScreenElement;
+  if(!isFs){
+    const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen||el.msRequestFullscreen;
+    if(req) req.call(el).catch(()=>{});
+  } else {
+    const exit=document.exitFullscreen||document.webkitExitFullscreen||document.mozCancelFullScreen||document.msExitFullscreen;
+    if(exit) exit.call(document);
+  }
 }
 async function togglePiP(){
   try{
@@ -1238,19 +1258,29 @@ video.addEventListener('ended',()=>{if(!isLoop)setSt('Ended','idle');});
 video.addEventListener('leavepictureinpicture',()=>document.getElementById('pipBtn').classList.remove('on'));
 video.addEventListener('dblclick',toggleFS);
 
-// Fullscreen icons
+// Fullscreen icons — standard browsers
 ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange'].forEach(ev=>{
   document.addEventListener(ev,()=>{
     const fs=!!(document.fullscreenElement||document.webkitFullscreenElement);
     document.getElementById('fsEx').style.display=fs?'none':'block';
     document.getElementById('fsCol').style.display=fs?'block':'none';
-    // On mobile fullscreen, lock to landscape
+    // Lock to landscape on enter, unlock on exit
     if(fs&&screen.orientation&&screen.orientation.lock){
       screen.orientation.lock('landscape').catch(()=>{});
     } else if(!fs&&screen.orientation&&screen.orientation.unlock){
       screen.orientation.unlock();
     }
   });
+});
+
+// iOS Safari fullscreen events (fired on the video element, not document)
+video.addEventListener('webkitbeginfullscreen',()=>{
+  document.getElementById('fsEx').style.display='none';
+  document.getElementById('fsCol').style.display='block';
+});
+video.addEventListener('webkitendfullscreen',()=>{
+  document.getElementById('fsEx').style.display='block';
+  document.getElementById('fsCol').style.display='none';
 });
 
 // ══════════════════════════════════════
